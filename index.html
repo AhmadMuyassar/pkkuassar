@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Digital Folder - Red & Black Theme</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --primary-red: #ff1e38;
+            --dark-red: #8b0000;
+            --card-bg: #121212;
+            --glow-red: rgba(255, 30, 56, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+            perspective: 1200px;
+        }
+
+        /* --- TAHAP 1: FOLDER DIGITAL 3D (Layar Awal Pembuka) --- */
+        .folder-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5, 5, 5, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            cursor: pointer;
+        }
+
+        .folder-overlay.hidden {
+            opacity: 0;
+            transform: scale(1.5) translateZ(300px);
+            pointer-events: none;
+        }
+
+        .folder-3d-box {
+            width: 260px;
+            height: 180px;
+            background: linear-gradient(135deg, #200000, #500000);
+            border: 3px solid var(--primary-red);
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 0 40px var(--glow-red), inset 0 0 20px var(--dark-red);
+            transform-style: preserve-3d;
+            transform: rotateX(15deg) rotateY(-20deg);
+            animation: folderFloat 3s ease-in-out infinite alternate;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 15px;
+        }
+
+        .folder-tab {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            width: 100px;
+            height: 25px;
+            background: var(--dark-red);
+            border-top: 3px solid var(--primary-red);
+            border-left: 3px solid var(--primary-red);
+            border-right: 3px solid var(--primary-red);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        @keyframes folderFloat {
+            0% { transform: rotateX(15deg) rotateY(-20deg) translateY(0); }
+            100% { transform: rotateX(10deg) rotateY(-10deg) translateY(-15px); }
+        }
+
+        .folder-3d-box h2 {
+            color: #fff;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px var(--primary-red);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .folder-3d-box p {
+            font-size: 0.85rem;
+            color: #ff99a4;
+        }
+
+
+        /* --- TAHAP 2: KONTEN UTAMA --- */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease 0.5s, transform 1s ease 0.5s;
+        }
+
+        .container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1 {
+            color: var(--primary-red);
+            text-shadow: 0 0 15px var(--glow-red);
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Area Slider Card dengan Efek Transparan Ujung Kiri & Kanan */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            mask-image: linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0.1) 100%);
+            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0.1) 100%);
+            overflow: hidden;
+            padding: 10px 0;
+        }
+
+        .cards-wrapper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            width: 100%;
+            padding: 20px 10px;
+            perspective: 1000px;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+            transform: translateX(0);
+        }
+
+        .cards-wrapper.slide-out-left {
+            transform: translateX(-100px);
+            opacity: 0;
+        }
+
+        .cards-wrapper.slide-out-right {
+            transform: translateX(100px);
+            opacity: 0;
+        }
+
+        @media (max-width: 900px) {
+            .cards-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .slider-container {
+                mask-image: none;
+                -webkit-mask-image: none;
+            }
+        }
+
+        /* --- EFEK 3D CARD --- */
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--dark-red);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(139, 0, 0, 0.3);
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        /* Posisi Miring Kiri & Kanan, Card Tengah Lurus */
+        .card:nth-child(1) { transform: perspective(800px) rotateY(8deg) rotateX(2deg); }
+        .card:nth-child(2) { transform: perspective(800px) rotateY(0deg) rotateX(0deg); }
+        .card:nth-child(3) { transform: perspective(800px) rotateY(-8deg) rotateX(2deg); }
+
+        .card:hover {
+            border-color: var(--primary-red);
+            box-shadow: 0 15px 35px var(--glow-red);
+            transform: perspective(800px) rotateY(0deg) rotateX(0deg) translateY(-10px) scale(1.03);
+            z-index: 10;
+        }
+
+        /* Kotak Video Landscape */
+        .card-media {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: #1a1a1a;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--dark-red);
+            overflow: hidden;
+        }
+
+        .card-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Keterangan Singkat (1 Kalimat di Tengah Bawah) */
+        .card-content {
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        .card-content p {
+            font-size: 0.9rem;
+            color: #ddd;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        /* --- STYLING KHUSUS CARD 8 (SAINTEK 3D FONT BOLD & MENYALA) --- */
+        .card.special-card {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 25px var(--glow-red);
+            animation: pulse-card-3d 2s infinite alternate;
+            background: linear-gradient(145deg, #180303, #260005);
+        }
+
+        @keyframes pulse-card-3d {
+            0% { transform: perspective(800px) rotateY(0deg) scale(1); box-shadow: 0 0 15px var(--glow-red); }
+            100% { transform: perspective(800px) rotateY(0deg) scale(1.02); box-shadow: 0 0 35px var(--primary-red); }
+        }
+
+        .card.special-card .card-content p {
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-shadow: 0 0 10px var(--primary-red), 0 0 20px var(--dark-red);
+            text-transform: uppercase;
+        }
+
+        /* Tombol Navigasi Kiri & Kanan */
+        .nav-btn {
+            background: rgba(139, 0, 0, 0.5);
+            border: 2px solid var(--primary-red);
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 10px 18px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: 0.3s;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .nav-btn:hover {
+            background-color: var(--primary-red);
+            box-shadow: 0 0 20px var(--primary-red);
+        }
+
+        #prevBtn { left: -60px; }
+        #nextBtn { right: -60px; }
+
+        @media (max-width: 1050px) {
+            #prevBtn { left: 10px; }
+            #nextBtn { right: 10px; }
+        }
+
+        /* Indikator Halaman / Dot */
+        .indicators {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #333;
+            border: 1px solid var(--dark-red);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .dot.active {
+            background-color: var(--primary-red);
+            box-shadow: 0 0 10px var(--primary-red);
+        }
+
+        /* --- MODAL LAYAR PENUH CARD 8 --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            width: 80%;
+            max-width: 900px;
+            background: #111;
+            border: 3px solid var(--primary-red);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 60px var(--primary-red), inset 0 0 30px var(--glow-red);
+            transform: scale(0.6) translateZ(-200px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            text-align: left;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateZ(0);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--primary-red);
+            font-size: 2rem;
+            cursor: pointer;
+            text-shadow: 0 0 10px var(--primary-red);
+        }
+
+        .modal-video-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            margin-bottom: 15px;
+            border: 1px solid var(--dark-red);
+        }
+
+        .modal-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-content h2 {
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            color: var(--primary-red);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px var(--glow-red);
+            text-transform: uppercase;
+        }
+
+        .modal-content p {
+            color: #ddd;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LAYER AWAL: FOLDER DIGITAL 3D -->
+    <div class="folder-overlay" id="folderOverlay" onclick="openFolder()">
+        <div class="folder-3d-box">
+            <div class="folder-tab"></div>
+            <h2>Digital 3D Folder</h2>
+            <p>Klik untuk Membuka Arsip</p>
+        </div>
+    </div>
+
+    <!-- KONTEN UTAMA -->
+    <div class="container" id="mainContainer">
+        <h1>UIN Alauddin Makassar</h1>
+
+        <div class="slider-container">
+            <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">&#10094;</button>
+            
+            <!-- Wrapper 9 Card -->
+            <div class="cards-wrapper" id="cardContainer">
+                <!-- Card dirender otomatis via JavaScript -->
+            </div>
+
+            <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">&#10095;</button>
+        </div>
+
+        <!-- Indikator Geser -->
+        <div class="indicators" id="indicators">
+            <span class="dot active" onclick="goToSlide(0)"></span>
+            <span class="dot" onclick="goToSlide(1)"></span>
+            <span class="dot" onclick="goToSlide(2)"></span>
+        </div>
+    </div>
+
+    <!-- MODAL LAYAR PENUH UNTUK CARD 8 (SAINTEK) -->
+    <div class="modal-overlay" id="cardModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <div class="modal-video-container">
+                <video id="modalVideo" controls autoplay>
+                    <source src="saintek.mp4" type="video/mp4">
+                    Browser Anda tidak mendukung tag video.
+                </video>
+            </div>
+            <h2>Fakultas Sains dan Teknologi (Saintek)</h2>
+            <p>Profil dan video singkat mengenai kegiatan akademik, riset teknologi, serta laboratorium unggulan di Fakultas Saintek UIN Alauddin Makassar.</p>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi Buka Folder 3D Digital
+        function openFolder() {
+            const overlay = document.getElementById("folderOverlay");
+            const container = document.getElementById("mainContainer");
+            
+            overlay.classList.add("hidden");
+            setTimeout(() => {
+                container.classList.add("show");
+            }, 300);
+        }
+
+        // Data 9 Card dengan Nama File Video yang Berbeda-Beda
+        const cardData = [
+            { id: 1, text: "Fakultas Dakwah dan Komunikasi", video: "fdk.mp4", special: false },
+            { id: 2, text: "Fakultas Adab dan Humaniora", video: "fah.mp4", special: false },
+            { id: 3, text: "Fakultas Syariah dan Hukum", video: "fsh.mp4", special: false },
+            { id: 4, text: "Fakultas Tarbiyah dan Keguruan", video: "ftk.mp4", special: false },
+            { id: 5, text: "Fakultas Ushuluddin dan Filsafat", video: "usul.mp4", special: false },
+            { id: 6, text: "Fakultas Kedokteran dan Ilmu Kesehatan", video: "fkik.mp4", special: false },
+            { id: 7, text: "Fakultas Ekonomi dan Bisnis Islam", video: "febi.mp4", special: false },
+            { id: 8, text: "Fakultas Sains dan Teknologi", video: "fst.mp4", special: true }, // Posisi 8 Spesial
+            { id: 9, text: "Program Pascasarjana UIN Alauddin Makassar", video: "pasca.mp4", special: false }
+        ];
+
+        let currentPage = 0;
+        const itemsPerPage = 3;
+        const totalPages = Math.ceil(cardData.length / itemsPerPage);
+
+        const cardContainer = document.getElementById("cardContainer");
+        const indicatorsContainer = document.getElementById("indicators");
+        const cardModal = document.getElementById("cardModal");
+        const modalVideo = document.getElementById("modalVideo");
+
+        function renderCards(direction = 1) {
+            if (direction > 0) {
+                cardContainer.classList.add("slide-out-left");
+            } else {
+                cardContainer.classList.add("slide-out-right");
+            }
+
+            setTimeout(() => {
+                cardContainer.innerHTML = "";
+                const start = currentPage * itemsPerPage;
+                const end = start + itemsPerPage;
+                const currentItems = cardData.slice(start, end);
+
+                currentItems.forEach((item) => {
+                    const cardDiv = document.createElement("div");
+                    cardDiv.className = `card ${item.special ? 'special-card' : ''}`;
+                    
+                    cardDiv.onclick = () => {
+                        if (item.special) {
+                            openModal(item.video);
+                        } else {
+                            alert(`Anda memilih: ${item.text}`);
+                        }
+                    };
+
+                    cardDiv.innerHTML = `
+                        <div class="card-media">
+                            <video autoplay muted loop playsinline>
+                                <source src="${item.video}" type="video/mp4">
+                                Browser Anda tidak mendukung tag video.
+                            </video>
+                        </div>
+                        <div class="card-content">
+                            <p>${item.text}</p>
+                        </div>
+                    `;
+                    cardContainer.appendChild(cardDiv);
+                });
+
+                updateIndicators();
+                cardContainer.classList.remove("slide-out-left", "slide-out-right");
+            }, 250);
+        }
+
+        function changeSlide(direction) {
+            currentPage += direction;
+            if (currentPage < 0) {
+                currentPage = totalPages - 1;
+            } else if (currentPage >= totalPages) {
+                currentPage = 0;
+            }
+            renderCards(direction);
+        }
+
+        function goToSlide(pageIndex) {
+            if (pageIndex === currentPage) return;
+            const direction = pageIndex > currentPage ? 1 : -1;
+            currentPage = pageIndex;
+            renderCards(direction);
+        }
+
+        function updateIndicators() {
+            const dots = indicatorsContainer.getElementsByClassName("dot");
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].classList.toggle("active", i === currentPage);
+            }
+        }
+
+        function openModal(videoSrc) {
+            modalVideo.src = videoSrc;
+            modalVideo.load();
+            cardModal.classList.add("active");
+        }
+
+        function closeModal() {
+            modalVideo.pause();
+            cardModal.classList.remove("active");
+        }
+
+        renderCards(1);
+
+        // Dukungan Swipe Touch (Mobile / Tablet)
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        cardContainer.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        cardContainer.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                changeSlide(1);
+            }
+            if (touchEndX > touchStartX + 50) {
+                changeSlide(-1);
+            }
+        }
+    </script>
+</body>
+</html>
